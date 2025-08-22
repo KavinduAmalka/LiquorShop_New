@@ -44,10 +44,11 @@ const Navbar = () => {
                 ) : (
                   <div className='relative group flex flex-col items-center'>
                     <img src={assets.profile_icon} alt="Profile" className="w-10"/>
-                    {user?.name && (
-                      <span className="text-xs mt-1 font-medium text-gray-700 whitespace-nowrap">{user.name}</span>
+                    {user?.username && (
+                      <span className="text-xs mt-1 font-medium text-gray-700 whitespace-nowrap">{user.username}</span>
                     )}
                     <ul className='hidden group-hover:block absolute top-10 right-0 bg-white shadow border border-gray-200 py-2.5 w-30 rounded-md text-sm z-40'>
+                      <li onClick={()=>navigate("profile")} className='p-1.5 pl-3 hover:bg-primary/10 cursor-pointer font-semibold'>My Profile</li>
                       <li onClick={()=>navigate("my-orders")} className='p-1.5 pl-3 hover:bg-primary/10 cursor-pointer'>My Orders</li>
                       <li onClick={logoutUser} className='p-1.5 pl-3 hover:bg-primary/10 cursor-pointer'>Logout</li>
                     </ul>
@@ -72,14 +73,17 @@ const Navbar = () => {
             <div className={`${open ? 'flex' : 'hidden'} absolute top-[100px] right-0 w-14/16 h-screen bg-white shadow-md py-4 flex-col items-end gap-5 px-10 text-sm md:hidden z-100`}>
                 <NavLink onClick={()=> setOpen(false)} to='/' className="text-right">Home</NavLink>
                 <NavLink onClick={()=> setOpen(false)} to='/products' className="text-right">All Product</NavLink>
-                {user && 
-                  <NavLink onClick={()=> setOpen(false)} to='/my-orders' className="text-right">My Orders</NavLink>
-                }
+                {user && (
+                  <>
+                    <NavLink onClick={()=> setOpen(false)} to='/profile' className="text-right font-semibold">My Profile</NavLink>
+                    <NavLink onClick={()=> setOpen(false)} to='/my-orders' className="text-right">My Orders</NavLink>
+                  </>
+                )}
                 <NavLink onClick={()=> setOpen(false)} to='/' className="text-right">Contact</NavLink>
-                {user && user.name && (
+                {user && user.username && (
                   <div className="flex flex-col items-end w-full mt-2">
                     <img src={assets.profile_icon} alt="Profile" className="w-10"/>
-                    <span className="text-xs mt-1 font-medium text-gray-700 whitespace-nowrap">{user.name}</span>
+                    <span className="text-xs mt-1 font-medium text-gray-700 whitespace-nowrap">{user.username}</span>
                   </div>
                 )}
 

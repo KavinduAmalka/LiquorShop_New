@@ -209,10 +209,10 @@ export const AppContextProvider = ({children})=>{
     }
 
     // Login function that loads cart items from database
-    const loginUser = async (email, password, name = null, isRegister = false) => {
+    const loginUser = async (email, password, name = null, isRegister = false, contactNumber = null, country = null, username = null) => {
       try {
         const endpoint = isRegister ? '/api/user/register' : '/api/user/login';
-        const payload = isRegister ? { name, email, password } : { email, password };
+        const payload = isRegister ? { name, username, email, password, contactNumber, country } : { email, password };
         
         const { data } = await axios.post(endpoint, payload);
         

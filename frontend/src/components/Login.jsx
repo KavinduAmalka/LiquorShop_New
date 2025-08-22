@@ -7,28 +7,34 @@ const Login = () => {
     const {setShowUserLogin, loginUser} =useAppContext();  
 
     const [state, setState] = React.useState("login");
+    const [username, setUsername] = React.useState("");
     const [name, setName] = React.useState("");
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
+    const [contactNumber, setContactNumber] = React.useState("");
+    const [country, setCountry] = React.useState("");
 
     const onSubmitHandler = async (event)=>{
         try {
             event.preventDefault();
-            
-            const result = await loginUser(email, password, name, state === "register");
-            
+            let result;
+            if(state === "register") {
+                result = await loginUser(email, password, name, true, contactNumber, country, username);
+            } else {
+                result = await loginUser(email, password, name, false);
+            }
             if(result.success){
                 setShowUserLogin(false);
                 // Clear form
                 setName("");
                 setEmail("");
                 setPassword("");
+                setContactNumber("");
+                setCountry("");
             }
-            
         } catch (error) {
             toast.error(error.message);  
         }
-   
     }
 
   return (
@@ -39,10 +45,24 @@ const Login = () => {
                 <span className="text-primary">User</span> {state === "login" ? "Login" : "Sign Up"}
             </p>
             {state === "register" && (
+                <>
+                <div className="w-full">
+                    <p>Username</p>
+                    <input onChange={(e) => setUsername(e.target.value)} value={username} placeholder="type here" className="border border-gray-200 rounded w-full p-2 mt-1 outline-primary" type="text" required />
+                </div>
                 <div className="w-full">
                     <p>Name</p>
                     <input onChange={(e) => setName(e.target.value)} value={name} placeholder="type here" className="border border-gray-200 rounded w-full p-2 mt-1 outline-primary" type="text" required />
                 </div>
+                <div className="w-full">
+                    <p>Contact Number</p>
+                    <input onChange={(e) => setContactNumber(e.target.value)} value={contactNumber} placeholder="type here" className="border border-gray-200 rounded w-full p-2 mt-1 outline-primary" type="text" required />
+                </div>
+                <div className="w-full">
+                    <p>Country</p>
+                    <input onChange={(e) => setCountry(e.target.value)} value={country} placeholder="type here" className="border border-gray-200 rounded w-full p-2 mt-1 outline-primary" type="text" required />
+                </div>
+                </>
             )}
             <div className="w-full ">
                 <p>Email</p>

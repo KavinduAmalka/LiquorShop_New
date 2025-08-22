@@ -44,14 +44,14 @@ const AddAddress = () => {
   const onSubmitHandler = async (e)=> {
     e.preventDefault();
     
-    if (!user || !user._id) {
+    if (!user) {
       toast.error("Please login to add address");
       navigate('/');
       return;
     }
     
     try {
-        const { data } = await axios.post('/api/address/add', {address, userId: user._id});
+  const { data } = await axios.post('/api/address/add', {address, userId: user.email});
 
         if(data.success){
           toast.success(data.message);
