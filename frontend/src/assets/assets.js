@@ -1,4 +1,4 @@
-import logo from "./Logo.png";
+import logo2 from "./Logo.png";
 import search_icon from "./search_icon.svg";
 import remove_icon from "./remove_icon.svg";
 import arrow_right_icon_colored from "./arrow_right_icon_colored.png";
@@ -46,7 +46,7 @@ import bottom_banner_image from "./bottom_banner_image.jpeg";
 import bottom_banner_image_sm from "./bottom_banner_image_sm.jpeg";
 
 export const assets = {
-  logo,
+  logo2,
   search_icon,
   remove_icon,
   arrow_right_icon_colored,
