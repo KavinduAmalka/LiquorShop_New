@@ -9,7 +9,13 @@ import toast from "react-hot-toast";
     const [addresses, setAddresses] = useState([])
     const [showAddress, setShowAddress] = useState(false)
     const [selectedAddress, setSelectedAddress] = useState(null)
-    const [PaymentOption, setPaymentOption] = useState("COD");
+        const [PaymentOption, setPaymentOption] = useState("COD");
+        const [purchaseDate, setPurchaseDate] = useState(() => {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        });
+        const [preferredHour, setPreferredHour] = useState('1');
+        const [preferredPeriod, setPreferredPeriod] = useState('AM');
 
     const getCart = ()=>{
             let tempArray = [];
@@ -39,18 +45,34 @@ import toast from "react-hot-toast";
         }
     }
 
-    const placeOrder = async () => {
+        // Helper to check if selected date is Sunday
+        const isSunday = (dateStr) => {
+            const date = new Date(dateStr);
+            return date.getDay() === 0;
+        };
+
+        const placeOrder = async () => {
        try {
+
            if(!selectedAddress){
             return toast.error("Please select an address");
            }
+           if(!purchaseDate){
+            return toast.error("Please select a purchase date");
+           }
+           if(isSunday(purchaseDate)){
+            return toast.error("Purchase date cannot be a Sunday");
+           }
+           const preferredDeliveryTime = `${preferredHour} ${preferredPeriod}`;
 
            //Place Order with COD 
            if(PaymentOption === "COD"){
             const { data } = await axios.post('/api/order/cod', {
                 userId: user._id,
                 items:cartArray.map(item=>({product: item._id, quantity: item.quantity})),
-                address: selectedAddress._id
+                address: selectedAddress._id,
+                purchaseDate,
+                preferredDeliveryTime
             })
 
             if(data.success){
@@ -66,7 +88,9 @@ import toast from "react-hot-toast";
              const { data } = await axios.post('/api/order/stripe', {
                 userId: user._id,
                 items:cartArray.map(item=>({product: item._id, quantity: item.quantity})),
-                address: selectedAddress._id
+                address: selectedAddress._id,
+                purchaseDate,
+                preferredDeliveryTime
             })
 
             if(data.success){
@@ -184,7 +208,47 @@ import toast from "react-hot-toast";
                     </select>
                 </div>
 
-                <hr className="border-gray-300" />
+
+                                {/* Purchase Date Picker */}
+                                <div className="mt-4">
+                                    <label className="block text-sm font-medium mb-1">Date of Purchase</label>
+                                    <input
+                                        type="date"
+                                        className="w-full border border-gray-300 bg-white px-3 py-2 outline-none"
+                                        min={new Date().toISOString().split('T')[0]}
+                                        value={purchaseDate}
+                                        onChange={e => setPurchaseDate(e.target.value)}
+                                    />
+                                    {isSunday(purchaseDate) && (
+                                        <span className="text-red-500 text-xs">Sundays are not allowed.</span>
+                                    )}
+                                </div>
+
+                                {/* Preferred Delivery Time */}
+                                <div className="mt-4">
+                                    <label className="block text-sm font-medium mb-1">Preferred Delivery Time</label>
+                                    <div className="flex gap-2">
+                                        <select
+                                            className="border border-gray-300 bg-white px-2 py-2 outline-none"
+                                            value={preferredHour}
+                                            onChange={e => setPreferredHour(e.target.value)}
+                                        >
+                                            {Array.from({length: 12}, (_, i) => (
+                                                <option key={i+1} value={i+1}>{i+1}</option>
+                                            ))}
+                                        </select>
+                                        <select
+                                            className="border border-gray-300 bg-white px-2 py-2 outline-none"
+                                            value={preferredPeriod}
+                                            onChange={e => setPreferredPeriod(e.target.value)}
+                                        >
+                                            <option value="AM">AM</option>
+                                            <option value="PM">PM</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <hr className="border-gray-300 mt-4" />
 
                 <div className="text-gray-500 mt-4 space-y-2">
                     <p className="flex justify-between">

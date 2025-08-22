@@ -6,9 +6,9 @@ import User from "../models/User.js";
 // Place Order COD : /api/order/cod
 export const placeOrderCOD = async (req, res) => {
   try {
-      const { userId, items, address } = req.body;
-      console.log('COD Order Request:', { userId, items, address });
-      if(!address || !items || items.length === 0){
+      const { userId, items, address, purchaseDate, preferredDeliveryTime } = req.body;
+      console.log('COD Order Request:', { userId, items, address, purchaseDate, preferredDeliveryTime });
+      if(!address || !items || items.length === 0 || !purchaseDate || !preferredDeliveryTime){
         return res.json({success: false, message: "Invalid order details"});
       }
       // Calculate Amount Using Items
@@ -29,6 +29,8 @@ export const placeOrderCOD = async (req, res) => {
         amount,
         address,
         paymentType: 'COD',
+        purchaseDate,
+        preferredDeliveryTime
       });
       return res.json({success: true, message: "Order placed successfully"});
   } catch (error) {
@@ -40,10 +42,10 @@ export const placeOrderCOD = async (req, res) => {
 // Place Order Stripe : /api/order/stripe
 export const placeOrderStripe = async (req, res) => {
   try {
-      const { userId, items, address } = req.body;
+      const { userId, items, address, purchaseDate, preferredDeliveryTime } = req.body;
       const {origin} = req.headers;
-      console.log('Stripe Order Request:', { userId, items, address });
-      if(!address || !items || items.length === 0){
+      console.log('Stripe Order Request:', { userId, items, address, purchaseDate, preferredDeliveryTime });
+      if(!address || !items || items.length === 0 || !purchaseDate || !preferredDeliveryTime){
         return res.json({success: false, message: "Invalid order details"});
       }
       let productData = [];
@@ -69,6 +71,8 @@ export const placeOrderStripe = async (req, res) => {
         amount,
         address,
         paymentType: 'Online',
+        purchaseDate,
+        preferredDeliveryTime
       });
       //Stripe Gateway Inialize
       const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);

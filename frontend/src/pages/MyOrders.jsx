@@ -31,7 +31,7 @@ const MyOrders = () => {
        <div className='w-16 h-0.5 bg-primary rounded-full'></div>
       </div>
       {myOrders.map((order, index) => (
-        <div key={index} className='border border-gray-300 rounded-lg mb-10 p-4 py-5 max-w-4xl'>
+        <div key={index} className='border border-gray-300 rounded-lg mb-10 p-4 py-5 max-w-5xl'>
           <p className='flex justify-between md:items-center text-gray-400 md:font-medium max-md:flex-col'>
             <span>OrderId : {order._id}</span>
             <span>Payment : {order.paymentType}</span>
@@ -41,7 +41,7 @@ const MyOrders = () => {
             <div key={index}
             className={`relative bg-white text-gray-500/70 ${
               order.items.length !== index + 1 && "border-b"
-            } border-gray-300 flex flex-col md:flex-row md:items-center justify-between p-4 py-5 md:gap-16 w-full max-w-4xl`}>
+            } border-gray-300 flex flex-col md:flex-row md:items-center justify-between p-4 py-5 md:gap-18 w-full max-w-4xl`}>
              <div className='flex items-center mb-4 md:mb-0'>
               <div className='bg-primary/10 p-4 rounded-lg w-24 h-24 flex items-center justify-center'>
                <img src={item.product.image[0]} alt="" className='h-18  '/>
@@ -58,9 +58,11 @@ const MyOrders = () => {
              <div className='flex flex-col justify-center md:ml-8 mb-4 md:mb-0'>
                <p>Quantity: {item.quantity || "1"}</p>
                <p>Status: {order.status}</p>
-               <p>Date: {new Date(order.createdAt).toLocaleDateString()}</p>
+               <p>Date: {order.purchaseDate ? new Date(order.purchaseDate).toLocaleDateString() : '-'}</p>
+               <p className='w-max'>Preferred Delivery Time: {order.preferredDeliveryTime || '-'}</p>
+               <p>State: {order.address && order.address.state ? order.address.state : '-'}</p>
              </div>
-             <p className='text-primary text-lg font-medium'>
+             <p className='text-primary text-lg font-medium w-max'>
               Amount: {currency}{item.product.offerPrice * item.quantity}
              </p>
              </div>
