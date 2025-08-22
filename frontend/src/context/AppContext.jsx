@@ -19,7 +19,16 @@ export const AppContextProvider = ({children})=>{
     const [showUserLogin,setShowUserLogin] = useState(false);
     const [products, setProducts] = useState([]);
 
-    const [cartItems, setCartItems] = useState({});
+    // Load cart from localStorage if not logged in
+    const getInitialCart = () => {
+      try {
+        const stored = localStorage.getItem('cartItems');
+        return stored ? JSON.parse(stored) : {};
+      } catch {
+        return {};
+      }
+    };
+    const [cartItems, setCartItems] = useState(getInitialCart());
     const [searchQuery, setSearchQuery] = useState({});
 
     //Fetch Seller Status
@@ -44,14 +53,15 @@ export const AppContextProvider = ({children})=>{
            setUser(data.user)
            // Always load cart items from database when user is authenticated
            setCartItems(data.user.cartItems || {})
+           localStorage.removeItem('cartItems');
         } else {
            setUser(null)
-           setCartItems({})
+           setCartItems(getInitialCart())
         }
       } catch (error) {
           setUser(null)
           // Clear cart items when user is not authenticated
-          setCartItems({})
+          setCartItems(getInitialCart())
       }
     }
 
@@ -80,66 +90,68 @@ export const AppContextProvider = ({children})=>{
     // Debounce cart updates to backend
     const updateTimeout = useRef();
 
+    // Persist cart to localStorage for guests, sync to backend for logged-in users
     useEffect(() => {
-      // Only update cart if user is logged in and cart is not empty
-      if (!user || Object.keys(cartItems).length === 0) return;
-      
-      if (updateTimeout.current) clearTimeout(updateTimeout.current);
-      updateTimeout.current = setTimeout(() => {
-        const updateCart = async () => {
-          try {
-            const { data } = await axios.post('/api/cart/update', { cartItems });
-            if (!data.success) {
-              toast.error(data.message);
+      if (!user) {
+        // Save to localStorage
+        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+      } else {
+        // Only update cart if user is logged in and cart is not empty
+        if (Object.keys(cartItems).length === 0) return;
+        if (updateTimeout.current) clearTimeout(updateTimeout.current);
+        updateTimeout.current = setTimeout(() => {
+          const updateCart = async () => {
+            try {
+              const { data } = await axios.post('/api/cart/update', { cartItems });
+              if (!data.success) {
+                toast.error(data.message);
+              }
+            } catch (error) {
+              toast.error(error.message);
             }
-          } catch (error) {
-            toast.error(error.message);
-          }
-        };
-        updateCart();
-      }, 500); // 500ms debounce
-      return () => clearTimeout(updateTimeout.current);
+          };
+          updateCart();
+        }, 500); // 500ms debounce
+        return () => clearTimeout(updateTimeout.current);
+      }
     }, [cartItems, user]);
 
-    //Add product to cart
-    const addToCart = (itemID)=>{
-      if (!user) {
-        toast.error("Please login to add items to cart");
-        setShowUserLogin(true);
-        return;
-      }
-
+    //Add product to cart (guests allowed, logged-in users update backend immediately)
+    const addToCart = async (itemID) => {
       let cartData = structuredClone(cartItems);
-
       if(cartData[itemID]){
         cartData[itemID] +=1;
       }else{
         cartData[itemID] = 1;
       }
       setCartItems(cartData);
-      toast.success("Added to Cart")
+      toast.success("Added to Cart");
+      if (user) {
+        try {
+          await axios.post('/api/cart/update', { cartItems: cartData });
+        } catch (error) {
+          toast.error("Failed to update cart in backend");
+        }
+      }
     }
 
-    //Update Cart Item Quantity
-    const updateCartItem = (itemID, quantity) =>{
-      if (!user) {
-        toast.error("Please login to update cart");
-        return;
-      }
-
+    //Update Cart Item Quantity (guests allowed, logged-in users update backend immediately)
+    const updateCartItem = async (itemID, quantity) => {
       let cartData = structuredClone(cartItems);
       cartData[itemID] = quantity;
       setCartItems(cartData);
-      toast.success("Cart Updated")
+      toast.success("Cart Updated");
+      if (user) {
+        try {
+          await axios.post('/api/cart/update', { cartItems: cartData });
+        } catch (error) {
+          toast.error("Failed to update cart in backend");
+        }
+      }
     }
 
-    //Remove Item from Cart
-    const removeFromCart = (itemID) => {
-      if (!user) {
-        toast.error("Please login to modify cart");
-        return;
-      }
-
+    //Remove Item from Cart (guests allowed, logged-in users update backend immediately)
+    const removeFromCart = async (itemID) => {
       let cartData = structuredClone(cartItems);
       if(cartData[itemID]){
         cartData[itemID] -= 1;
@@ -149,17 +161,21 @@ export const AppContextProvider = ({children})=>{
       }
       toast.success("Item removed from Cart");
       setCartItems(cartData);
+      if (user) {
+        try {
+          await axios.post('/api/cart/update', { cartItems: cartData });
+        } catch (error) {
+          toast.error("Failed to update cart in backend");
+        }
+      }
     }
 
     //Clear Cart (both locally and in backend)
     const clearCart = async () => {
-      if (!user) {
-        setCartItems({});
-        return;
-      }
-
+      setCartItems({});
+      localStorage.removeItem('cartItems');
+      if (!user) return;
       try {
-        setCartItems({});
         await axios.post('/api/cart/update', { cartItems: {} });
       } catch (error) {
         toast.error("Failed to clear cart");
@@ -187,14 +203,15 @@ export const AppContextProvider = ({children})=>{
       return Math.floor(totalAmount * 100) / 100; 
     }
 
-    // Logout function that clears cart items
+    // Logout function that clears cart items and localStorage
     const logoutUser = async () => {
       try {
         const { data } = await axios.get('/api/user/logout')
         if(data.success){
           toast.success(data.message)
           setUser(null);
-          setCartItems({}); 
+          setCartItems(getInitialCart());
+          localStorage.removeItem('cartItems');
           navigate('/');
         }else{
           toast.error(data.message)
@@ -203,23 +220,28 @@ export const AppContextProvider = ({children})=>{
         toast.error(error.message)
         // Even if logout request fails, clear local state
         setUser(null);
-        setCartItems({});
+        setCartItems(getInitialCart());
+        localStorage.removeItem('cartItems');
         navigate('/');
       }
     }
 
-    // Login function that loads cart items from database
+    // Login function that loads cart items from database and merges localStorage cart
     const loginUser = async (email, password, name = null, isRegister = false, contactNumber = null, country = null, username = null) => {
       try {
         const endpoint = isRegister ? '/api/user/register' : '/api/user/login';
         const payload = isRegister ? { name, username, email, password, contactNumber, country } : { email, password };
-        
+        // If there is a guest cart, send it to backend for merging
+        let guestCart = getInitialCart();
+        if (Object.keys(guestCart).length > 0) {
+          payload.cartItems = guestCart;
+        }
         const { data } = await axios.post(endpoint, payload);
-        
         if(data.success){
           setUser(data.user);
           // Fetch the complete user data with cart items after login/register
           await fetchUser();
+          localStorage.removeItem('cartItems');
           navigate('/');
           return { success: true };
         } else {

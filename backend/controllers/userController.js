@@ -99,7 +99,18 @@ export const login = async (req, res) => {
 export const isAuth = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
-  return res.json({ success: true, user: {username: user.username, email: user.email, name: user.name, contactNumber: user.contactNumber, country: user.country} });
+    return res.json({
+      success: true,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        name: user.name,
+        contactNumber: user.contactNumber,
+        country: user.country,
+        cartItems: user.cartItems || {}
+      }
+    });
   } catch (error) {
     console.error(error.message);
     res.json({ success: false, message: error.message });
