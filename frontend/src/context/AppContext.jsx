@@ -118,6 +118,10 @@ export const AppContextProvider = ({children})=>{
 
     //Add product to cart (guests allowed, logged-in users update backend immediately)
     const addToCart = async (itemID) => {
+      if (!user) {
+        toast.error("You must be logged in to add items to the cart.");
+        return;
+      }
       let cartData = structuredClone(cartItems);
       if(cartData[itemID]){
         cartData[itemID] +=1;
@@ -126,12 +130,10 @@ export const AppContextProvider = ({children})=>{
       }
       setCartItems(cartData);
       toast.success("Added to Cart");
-      if (user) {
-        try {
-          await axios.post('/api/cart/update', { cartItems: cartData });
-        } catch (error) {
-          toast.error("Failed to update cart in backend");
-        }
+      try {
+        await axios.post('/api/cart/update', { cartItems: cartData });
+      } catch (error) {
+        toast.error("Failed to update cart in backend");
       }
     }
 
