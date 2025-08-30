@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { useAppContext } from '../context/AppContext'
+import { useAuth0AppContext } from '../context/Auth0AppContext'
 import ProductCard from '../components/ProductCard';
 
 const Allproduct  = () => {
 
-  const{products, searchQuery} =useAppContext()
+  const{products, searchQuery} = useAuth0AppContext()
   const [filteredProducts, setFilteredProducts] = useState([]);
 
   useEffect(() =>{

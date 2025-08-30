@@ -4,8 +4,8 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import { Toaster } from 'react-hot-toast'
 import Footer from './components/Footer'
-import { useAppContext } from './context/AppContext'
-import Login from './components/Login'
+import { useAuth0AppContext } from './context/Auth0AppContext'
+import Auth0Login from './components/Auth0Login'
 import Allproduct from './pages/Allproduct '
 import ProductCategory from './pages/ProductCategory'
 import ProductDetails from './pages/ProductDetails'
@@ -24,13 +24,17 @@ import UserProfile from './components/UserProfile'
 const App = () => {
 
   const isSellerPath = useLocation().pathname.includes("seller");
-  const {showUserLogin, isSeller} =useAppContext()
+  const {showUserLogin, isSeller, isLoading} = useAuth0AppContext()
+
+  if (isLoading) {
+    return <Loading />
+  }
 
   return (
     <div className='text-default min-h-screen text-gray-700 bg-white'>
 
       {isSellerPath ? null : <Navbar />}
-      {showUserLogin ? <Login/> :null}
+      {showUserLogin ? <Auth0Login/> : null}
 
       <Toaster />
 

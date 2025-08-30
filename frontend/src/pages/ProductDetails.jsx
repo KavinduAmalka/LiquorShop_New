@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useAppContext } from "../context/AppContext";
+import { useAuth0AppContext } from "../context/Auth0AppContext";
 import { assets } from "../assets/assets";
 import ProductCard from "../components/ProductCard";
 
 const ProductDetails = () => {
 
-    const {products, navigate, currency, addToCart} = useAppContext()
+    const {products, navigate, currency, addToCart} = useAuth0AppContext()
     const {id} =useParams()
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [thumbnail, setThumbnail] = useState(null);

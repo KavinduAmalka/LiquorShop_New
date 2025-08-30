@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { assets, categories } from '../../assets/assets';
-import { useAppContext } from '../../context/AppContext';
+import { useAuth0AppContext } from '../../context/Auth0AppContext';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 const AddProduct = () => {
 
@@ -12,7 +13,7 @@ const AddProduct = () => {
   const[price, setPrice] = useState("");
   const[offerPrice, setOfferPrice] = useState("");
 
-  const {axios} = useAppContext();
+  const {} = useAuth0AppContext();
 
   const onSubmitHandler = async (event) => {
     try {

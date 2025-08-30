@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { useAppContext } from '../context/AppContext'
+import { useAuth0AppContext } from '../context/Auth0AppContext'
 import { dummyOrders } from '../assets/assets'
+import axios from 'axios'
 
 const MyOrders = () => {
 
   const [myOrders, setMyOrders] = useState([])
-  const {currency, axios, user} = useAppContext()
+  const {currency, user} = useAuth0AppContext()
 
   const fetchMyOrders = async () => {
      try {

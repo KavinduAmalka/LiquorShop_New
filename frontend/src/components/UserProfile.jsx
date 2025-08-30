@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { useAppContext } from "../context/AppContext";
+import { useAuth0AppContext } from "../context/Auth0AppContext";
+import axios from "axios";
 
 
 const UserProfile = () => {
-  const { user, axios, setUser } = useAppContext();
+  const { user, setUser } = useAuth0AppContext();
 
   if (!user) return <div className="p-8">Please log in to view your profile.</div>;
 
@@ -21,12 +22,11 @@ const UserProfile = () => {
     setSaving(true);
     setEditError("");
     try {
-      const { data } = await axios.post("/api/user/update-profile", {
+      const { data } = await axios.post("/api/auth0-user/update-profile", {
         name: editData.name,
         username: editData.username,
         contactNumber: editData.contactNumber,
-        country: editData.country,
-        email: user.email
+        country: editData.country
       });
       if (data.success) {
         setUser((prev) => ({ ...prev, ...data.user }));

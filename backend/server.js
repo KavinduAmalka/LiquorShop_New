@@ -4,6 +4,7 @@ import cors from 'cors';
 import connectDB from './confligs/db.js';
 import 'dotenv/config';
 import userRouter from './routes/userRoute.js';
+import auth0UserRouter from './routes/auth0UserRoute.js';
 import sellerRouter from './routes/sellerRoute.js';
 import './confligs/cloudinary.js';
 import productRouter from './routes/productRoute.js';
@@ -30,6 +31,7 @@ app.use(cors({origin:allowedOrigins, credentials:true}));
 
 app.get('/',(req, res)=> res.send("API is working"));
 app.use('/api/user', userRouter)
+app.use('/api/auth0-user', auth0UserRouter)
 app.use('/api/seller', sellerRouter)
 app.use('/api/product', productRouter)
 app.use('/api/cart', cartRouter)

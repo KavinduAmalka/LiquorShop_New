@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { useAppContext } from '../../context/AppContext'
+import { useAuth0AppContext } from '../../context/Auth0AppContext'
 import { assets } from '../../assets/assets'
+import axios from 'axios'
 
 const Orders = () => {
 
-    const {currency, axios, isSeller} = useAppContext()
+    const {currency, isSeller} = useAuth0AppContext()
     const [orders, setOrders] = useState([])
 
     const fetchOrders = async () => {
@@ -55,11 +56,17 @@ const Orders = () => {
             </div>
 
             <div className="text-sm md:text-base text-black/60">
-                <p className='text-black/80'>{order.address.firstName} {order.address.lastName}</p>
-                <p>{order.address.street}, {order.address.city}</p>
-                <p>{order.address.state}, {order.address.zipCode}, {order.address.country}</p>
-                <p></p>
-                <p>{order.address.phone}</p>
+                {order.address ? (
+                    <>
+                        <p className='text-black/80'>{order.address.firstName} {order.address.lastName}</p>
+                        <p>{order.address.street}, {order.address.city}</p>
+                        <p>{order.address.state}, {order.address.zipCode}, {order.address.country}</p>
+                        <p></p>
+                        <p>{order.address.phone}</p>
+                    </>
+                ) : (
+                    <p className='text-red-500'>No address provided</p>
+                )}
             </div>
 
             <p className="font-medium text-lg my-auto">{currency}{order.amount}</p>

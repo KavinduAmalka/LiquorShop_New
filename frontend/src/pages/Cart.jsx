@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useAppContext } from "../context/AppContext";
+import { useAuth0AppContext } from "../context/Auth0AppContext";
 import { assets, dummyAddress } from "../assets/assets";
 import toast from "react-hot-toast";
+import axios from "axios";
 
  const Cart = () => {
-    const {products, currency, cartItems, removeFromCart, updateCartItem, getCartCount, navigate, getCartAmount, axios, user, clearCart} = useAppContext();
+    const {products, currency, cartItems, removeFromCart, updateCart, updateCartItem, clearCart, getCartCount, navigate, getCartAmount, user} = useAuth0AppContext();
     const [cartArray, setCartArray] = useState([])
     const [addresses, setAddresses] = useState([])
     const [showAddress, setShowAddress] = useState(false)

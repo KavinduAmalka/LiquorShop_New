@@ -1,7 +1,8 @@
 import React, { use, useEffect, useState } from 'react'
 import { assets } from '../assets/assets'
-import { useAppContext } from '../context/AppContext'
+import { useAuth0AppContext } from '../context/Auth0AppContext'
 import toast from 'react-hot-toast'
+import axios from 'axios'
 
 // Input Field Component
 const InputField = ({type, placeholder, name, handleChange, address})=>(
@@ -17,7 +18,7 @@ const InputField = ({type, placeholder, name, handleChange, address})=>(
 )
 const AddAddress = () => {
 
-  const {axios, user, navigate} = useAppContext()
+  const {user, navigate} = useAuth0AppContext()
 
   const [address, setAddress] = useState({
     firstName: "",

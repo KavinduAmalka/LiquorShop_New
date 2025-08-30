@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { assets } from '../assets/assets.js' // Adjust the path as necessary
-import { useAppContext } from '../context/AppContext.jsx'
+import { useAuth0AppContext } from '../context/Auth0AppContext.jsx'
+import { useAuth0 } from '@auth0/auth0-react'
 
 const Navbar = () => {
   const [open, setOpen] = React.useState(false)
-  const {user, setShowUserLogin, navigate, setSearchQuery, searchQuery, getCartCount, logoutUser} = useAppContext();
+  const {user, navigate, setSearchQuery, searchQuery, getCartCount, logoutUser} = useAuth0AppContext();
+  const { loginWithRedirect } = useAuth0();
 
   useEffect(()=>{
     if(searchQuery.length >0){
@@ -37,7 +39,7 @@ const Navbar = () => {
                 </div>
 
                 {!user ? ( 
-                  <button onClick={()=> setShowUserLogin(true)} 
+                  <button onClick={() => loginWithRedirect()} 
                     className="cursor-pointer px-8 py-2 bg-primary hover:bg-accent transition text-white rounded-full">
                       Login
                   </button>
@@ -90,7 +92,7 @@ const Navbar = () => {
                 {!user ?(
                   <button onClick={()=>{
                     setOpen(false);
-                    setShowUserLogin(true);
+                    loginWithRedirect();
                   }}
                   className="cursor-pointer px-6 py-2 mt-2 bg-primary hover:bg-accent transition text-white rounded-full text-sm">
                     Login

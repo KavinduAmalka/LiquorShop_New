@@ -1,11 +1,11 @@
 import React from 'react'
-import { useAppContext } from '../../context/AppContext'
+import { useAuth0AppContext } from '../../context/Auth0AppContext'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
 const ProductList = () => {
 
-    const {products, currency, fetchProducts} = useAppContext()
+    const {products, currency, fetchProducts} = useAuth0AppContext()
 
   const toggleStock = async (id, inStock)=>{
     try {

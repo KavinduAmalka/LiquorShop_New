@@ -1,9 +1,9 @@
 import React from 'react';
 import { assets } from '../assets/assets';
-import { useAppContext } from '../context/AppContext';
+import { useAuth0AppContext } from '../context/Auth0AppContext';
 
 const ProductCard = ({product}) => {
-    const {currency, addToCart, cartItems, removeFromCart, navigate} = useAppContext();
+    const {currency, addToCart, cartItems, removeFromCart, navigate} = useAuth0AppContext();
 
    
 
