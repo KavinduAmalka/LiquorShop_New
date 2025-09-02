@@ -12,6 +12,7 @@ import cartRouter from './routes/cartRoute.js';
 import addressRouter from './routes/addressRoute.js';
 import orderRouter from './routes/orderRoute.js';
 import { stripeWebhooks } from './controllers/orderController.js';
+import { sanitizeAll } from './middlewares/validation.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -27,7 +28,13 @@ app.post('/stripe',express.raw({type: 'application/json'}), stripeWebhooks)
 //Middleware configurations
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({origin:allowedOrigins, credentials:true}));
+app.use(cors({
+  origin: allowedOrigins, 
+  credentials: true
+}));
+
+// Apply input sanitization to all routes (includes NoSQL injection protection)
+app.use(sanitizeAll);
 
 app.get('/',(req, res)=> res.send("API is working"));
 app.use('/api/user', userRouter)

@@ -1,22 +1,49 @@
 // Update user profile: /api/user/update-profile
 export const updateProfile = async (req, res) => {
   try {
-    const { email, username, name, contactNumber, country } = req.body;
-    if (!email || !username || !name || !contactNumber || !country) {
+    const { username, name, contactNumber, country } = req.body;
+    
+    // Use authenticated user ID instead of email from request body
+    const userId = req.user.id;
+    
+    if (!username || !name || !contactNumber || !country) {
       return res.json({ success: false, message: "All fields are required" });
     }
-    const user = await User.findOneAndUpdate(
-      { email },
+
+    // Check if username already exists for other users
+    const existingUser = await User.findOne({ 
+      username: username, 
+      _id: { $ne: userId } 
+    });
+    
+    if (existingUser) {
+      return res.json({ success: false, message: "Username already exists" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
       { username, name, contactNumber, country },
-      { new: true }
+      { new: true, runValidators: true }
     );
+    
     if (!user) {
       return res.json({ success: false, message: "User not found" });
     }
-    return res.json({ success: true, user: { username: user.username, email: user.email, name: user.name, contactNumber: user.contactNumber, country: user.country } });
+    
+    return res.json({ 
+      success: true, 
+      user: { 
+        username: user.username, 
+        email: user.email, 
+        name: user.name, 
+        contactNumber: user.contactNumber, 
+        country: user.country 
+      } 
+    });
   } catch (error) {
     console.error(error.message);
-    res.json({ success: false, message: error.message });
+    // Don't expose internal error details
+    res.status(500).json({ success: false, message: "An error occurred while updating profile" });
   }
 };
 import User from '../models/User.js';

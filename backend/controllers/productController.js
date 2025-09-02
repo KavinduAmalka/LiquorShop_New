@@ -7,24 +7,64 @@ import cloudinary from "../confligs/cloudinary.js";
 // Add Product : /api/product/add
 export const addProduct = async (req, res) => {
   try {
+    // Validate that productData exists and is valid JSON
+    if (!req.body.productData) {
+      return res.status(400).json({ success: false, message: "Product data is required" });
+    }
 
-      let productData = JSON.parse(req.body.productData);
-      const images = req.files;
+    let productData;
+    try {
+      productData = JSON.parse(req.body.productData);
+    } catch (parseError) {
+      return res.status(400).json({ success: false, message: "Invalid product data format" });
+    }
 
-      let imageUrl = await Promise.all(
-        images.map(async (item) => {
-          let result = await cloudinary.uploader.upload(item.path, { resource_type: 'image' });
-          return result.secure_url;
-        })
-      );
+    // Validate required fields
+    const { name, description, category, price, offerPrice } = productData;
+    if (!name || !category || !price) {
+      return res.status(400).json({ success: false, message: "Name, category, and price are required" });
+    }
 
-      await Product.create({ ...productData, image: imageUrl });
+    // Validate data types and ranges
+    if (typeof price !== 'number' || price <= 0) {
+      return res.status(400).json({ success: false, message: "Price must be a positive number" });
+    }
 
-      res.json({ success: true, message: "Product added successfully" });
+    if (offerPrice && (typeof offerPrice !== 'number' || offerPrice <= 0)) {
+      return res.status(400).json({ success: false, message: "Offer price must be a positive number" });
+    }
 
-  }catch (error){
-    console.log(error.message);
-    res.json({success: false, message: error.message});
+    const images = req.files;
+    if (!images || images.length === 0) {
+      return res.status(400).json({ success: false, message: "At least one image is required" });
+    }
+
+    let imageUrl = await Promise.all(
+      images.map(async (item) => {
+        let result = await cloudinary.uploader.upload(item.path, { 
+          resource_type: 'image',
+          allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+          max_file_size: 5000000 // 5MB limit
+        });
+        return result.secure_url;
+      })
+    );
+
+    // Create product with validated data
+    const newProduct = await Product.create({ 
+      name: name.trim(),
+      description: Array.isArray(description) ? description : [description],
+      category: category.trim(),
+      price: Number(price),
+      offerPrice: offerPrice ? Number(offerPrice) : undefined,
+      image: imageUrl 
+    });
+
+    res.json({ success: true, message: "Product added successfully", product: newProduct });
+
+  } catch (error) {
+    console.error('Product creation error:', error.message);
+    res.status(500).json({ success: false, message: "Failed to add product" });
   }
 }
 

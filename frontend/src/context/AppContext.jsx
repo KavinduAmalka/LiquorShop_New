@@ -107,7 +107,7 @@ export const AppContextProvider = ({children})=>{
                 toast.error(data.message);
               }
             } catch (error) {
-              toast.error(error.message);
+              toast.error("Failed to update cart in backend");
             }
           };
           updateCart();
@@ -251,8 +251,8 @@ export const AppContextProvider = ({children})=>{
           return { success: false, message: data.message };
         }
       } catch (error) {
-        toast.error(error.message);
-        return { success: false, message: error.message };
+        toast.error(error.response?.data?.message || "Login failed");
+        return { success: false, message: error.response?.data?.message || "Login failed" };
       }
     }
 
