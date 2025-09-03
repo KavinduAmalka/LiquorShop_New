@@ -1,0 +1,119 @@
+version: 2
+updates:
+  # Backend dependencies
+  - package-ecosystem: "npm"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    target-branch: "main"
+    reviewers:
+      - "KavinduAmalka"
+    assignees:
+      - "KavinduAmalka"
+    commit-message:
+      prefix: "deps(backend)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      - "backend"
+    # Security updates only (for high/critical vulnerabilities)
+    allow:
+      - dependency-type: "direct"
+        update-type: "security"
+      - dependency-type: "indirect"
+        update-type: "security"
+    # Group non-security updates to reduce PR noise
+    groups:
+      backend-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Frontend dependencies  
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday" 
+      time: "09:00"
+    open-pull-requests-limit: 10
+    target-branch: "main"
+    reviewers:
+      - "KavinduAmalka"
+    assignees:
+      - "KavinduAmalka"
+    commit-message:
+      prefix: "deps(frontend)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      - "frontend"
+    # Security updates only (for high/critical vulnerabilities)
+    allow:
+      - dependency-type: "direct"
+        update-type: "security"
+      - dependency-type: "indirect"
+        update-type: "security"
+    # Group non-security updates to reduce PR noise
+    groups:
+      frontend-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Root level dependencies (if any)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+    reviewers:
+      - "KavinduAmalka"
+    assignees:
+      - "KavinduAmalka"
+    commit-message:
+      prefix: "deps(root)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      - "root"
+    # Security updates only
+    allow:
+      - dependency-type: "direct"
+        update-type: "security"
+      - dependency-type: "indirect" 
+        update-type: "security"
+
+  # GitHub Actions workflow dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+    reviewers:
+      - "KavinduAmalka"
+    assignees:
+      - "KavinduAmalka"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "ci/cd"
+      - "security"
+      - "github-actions"

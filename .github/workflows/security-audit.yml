@@ -1,0 +1,113 @@
+name: Security Vulnerability Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run security check every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        component: [backend, frontend]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: ${{ matrix.component }}/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./${{ matrix.component }}
+      run: npm ci
+      
+    - name: Run security audit
+      working-directory: ./${{ matrix.component }}
+      run: |
+        echo "🔍 Running security audit for ${{ matrix.component }}..."
+        npm audit --audit-level=moderate
+        
+    - name: Check for outdated packages
+      working-directory: ./${{ matrix.component }}
+      run: |
+        echo "📊 Checking for outdated packages in ${{ matrix.component }}..."
+        npm outdated || true
+        
+    - name: Generate security report
+      working-directory: ./${{ matrix.component }}
+      run: |
+        echo "📋 Generating security report for ${{ matrix.component }}..."
+        npm audit --json > security-report-${{ matrix.component }}.json || true
+        
+    - name: Upload security report
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-report-${{ matrix.component }}
+        path: ${{ matrix.component }}/security-report-${{ matrix.component }}.json
+        retention-days: 30
+
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Dependency Review
+      uses: actions/dependency-review-action@v4
+      with:
+        fail-on-severity: moderate
+        
+  security-summary:
+    needs: [security-audit]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Download all security reports
+      uses: actions/download-artifact@v4
+      
+    - name: Generate security summary
+      run: |
+        echo "🔒 Security Audit Summary" >> $GITHUB_STEP_SUMMARY
+        echo "=========================" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        for report in security-report-*/security-report-*.json; do
+          if [ -f "$report" ]; then
+            component=$(basename "$report" | sed 's/security-report-\(.*\)\.json/\1/')
+            echo "### 📊 $component Security Status" >> $GITHUB_STEP_SUMMARY
+            
+            # Parse JSON and extract vulnerability count
+            if command -v jq &> /dev/null; then
+              total_vulns=$(jq '.metadata.vulnerabilities.total' "$report" 2>/dev/null || echo "0")
+              high_vulns=$(jq '.metadata.vulnerabilities.high' "$report" 2>/dev/null || echo "0")
+              moderate_vulns=$(jq '.metadata.vulnerabilities.moderate' "$report" 2>/dev/null || echo "0")
+              
+              if [ "$total_vulns" = "0" ]; then
+                echo "✅ No vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "❌ $total_vulns vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+                echo "- High: $high_vulns" >> $GITHUB_STEP_SUMMARY
+                echo "- Moderate: $moderate_vulns" >> $GITHUB_STEP_SUMMARY
+              fi
+            else
+              echo "⚠️ Could not parse security report (jq not available)" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+        done
+        
+        echo "📅 **Report Generated**: $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "🔗 **Workflow**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
