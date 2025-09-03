@@ -1,7 +1,9 @@
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import connectDB from './confligs/db.js';
+import { getSecurityConfig } from './confligs/security.js';
 import 'dotenv/config';
 import userRouter from './routes/userRoute.js';
 import auth0UserRouter from './routes/auth0UserRoute.js';
@@ -28,6 +30,11 @@ app.post('/stripe',express.raw({type: 'application/json'}), stripeWebhooks)
 //Middleware configurations
 app.use(express.json());
 app.use(cookieParser());
+
+// Security headers with Helmet.js (environment-specific configuration)
+const securityConfig = getSecurityConfig();
+app.use(helmet(securityConfig));
+
 app.use(cors({
   origin: allowedOrigins, 
   credentials: true
