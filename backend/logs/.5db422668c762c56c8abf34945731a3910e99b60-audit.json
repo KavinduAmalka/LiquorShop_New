@@ -1,0 +1,20 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 90
+    },
+    "auditLog": "E:\\LiquorShop_New\\backend\\logs\\.5db422668c762c56c8abf34945731a3910e99b60-audit.json",
+    "files": [
+        {
+            "date": 1756971426452,
+            "name": "E:\\LiquorShop_New\\backend\\logs\\security-2025-09-04.log",
+            "hash": "a2587f06d84c04d32062a7c851c7728f7d994f27b57ee73be6c767cb391964b5"
+        },
+        {
+            "date": 1757123542396,
+            "name": "E:\\LiquorShop_New\\backend\\logs\\security-2025-09-06.log",
+            "hash": "6ef278f75e3d3bd507e8058f9c77ffdabe709deb1ceed6a0f7abbdc91c6d0c25"
+        }
+    ],
+    "hashType": "sha256"
+}

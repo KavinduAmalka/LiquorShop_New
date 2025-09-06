@@ -1,5 +1,6 @@
 import { body, validationResult, param, query } from 'express-validator';
 import xss from 'xss';
+import { logSecurityAlert, logSecurityThreat } from '../confligs/logger.js';
 
 // NoSQL injection patterns to detect
 const noSQLInjectionPatterns = [
@@ -10,14 +11,44 @@ const noSQLInjectionPatterns = [
 ];
 
 // Sanitize and check for NoSQL injection
-const sanitizeAndValidate = (value) => {
+const sanitizeAndValidate = (value, req = null) => {
   if (typeof value !== 'string') return value;
   
   // Check for NoSQL injection patterns
   for (const pattern of noSQLInjectionPatterns) {
     if (pattern.test(value)) {
+      // Enhanced logging for NoSQL injection attempts
+      logSecurityThreat('nosql_injection_attempt', {
+        originalValue: value,
+        pattern: pattern.toString(),
+        ip: req?.ip || 'unknown',
+        userAgent: req?.get('User-Agent') || 'unknown',
+        url: req?.originalUrl || 'unknown',
+        userId: req?.user?.id || req?.user?.sub || 'anonymous'
+      });
+      
       console.warn(`NoSQL injection attempt detected: ${value}`);
       return value.replace(pattern, '_BLOCKED_');
+    }
+  }
+  
+  // Check for XSS patterns
+  const xssPatterns = [
+    /<script/i, /<iframe/i, /<object/i, /<embed/i, /javascript:/i, /vbscript:/i,
+    /onload=/i, /onerror=/i, /onclick=/i, /onmouseover=/i
+  ];
+  
+  for (const pattern of xssPatterns) {
+    if (pattern.test(value)) {
+      // Enhanced logging for XSS attempts
+      logSecurityThreat('xss_injection_attempt', {
+        originalValue: value,
+        pattern: pattern.toString(),
+        ip: req?.ip || 'unknown',
+        userAgent: req?.get('User-Agent') || 'unknown',
+        url: req?.originalUrl || 'unknown',
+        userId: req?.user?.id || req?.user?.sub || 'anonymous'
+      });
     }
   }
   
@@ -30,13 +61,13 @@ const sanitizeAndValidate = (value) => {
 };
 
 // Recursively sanitize objects
-const sanitizeObject = (obj) => {
+const sanitizeObject = (obj, req = null) => {
   if (obj === null || typeof obj !== 'object') {
-    return sanitizeAndValidate(obj);
+    return sanitizeAndValidate(obj, req);
   }
   
   if (Array.isArray(obj)) {
-    return obj.map(item => sanitizeObject(item));
+    return obj.map(item => sanitizeObject(item, req));
   }
   
   const sanitized = {};
@@ -44,10 +75,18 @@ const sanitizeObject = (obj) => {
     if (obj.hasOwnProperty(key)) {
       // Don't allow keys with $ (potential MongoDB operators)
       if (key.startsWith('$')) {
+        logSecurityAlert('nosql_key_injection_attempt', {
+          suspiciousKey: key,
+          ip: req?.ip || 'unknown',
+          userAgent: req?.get('User-Agent') || 'unknown',
+          url: req?.originalUrl || 'unknown',
+          userId: req?.user?.id || req?.user?.sub || 'anonymous'
+        });
+        
         console.warn(`Potential NoSQL injection key detected: ${key}`);
         continue; // Skip this key
       }
-      sanitized[key] = sanitizeObject(obj[key]);
+      sanitized[key] = sanitizeObject(obj[key], req);
     }
   }
   return sanitized;
@@ -58,7 +97,7 @@ export const sanitizeAll = (req, res, next) => {
   try {
     // Sanitize body
     if (req.body && typeof req.body === 'object') {
-      req.body = sanitizeObject(req.body);
+      req.body = sanitizeObject(req.body, req);
     }
 
     // Sanitize query parameters
@@ -66,8 +105,17 @@ export const sanitizeAll = (req, res, next) => {
       const sanitizedQuery = {};
       Object.keys(req.query).forEach(key => {
         if (!key.startsWith('$')) { // Block MongoDB operators
-          sanitizedQuery[key] = sanitizeAndValidate(req.query[key]);
+          sanitizedQuery[key] = sanitizeAndValidate(req.query[key], req);
         } else {
+          logSecurityAlert('nosql_query_injection_attempt', {
+            suspiciousQueryKey: key,
+            queryValue: req.query[key],
+            ip: req.ip || 'unknown',
+            userAgent: req.get('User-Agent') || 'unknown',
+            url: req.originalUrl || 'unknown',
+            userId: req.user?.id || req.user?.sub || 'anonymous'
+          });
+          
           console.warn(`Blocked query parameter: ${key}`);
         }
       });
@@ -83,7 +131,7 @@ export const sanitizeAll = (req, res, next) => {
     if (req.params && typeof req.params === 'object') {
       Object.keys(req.params).forEach(key => {
         if (typeof req.params[key] === 'string') {
-          req.params[key] = sanitizeAndValidate(req.params[key]);
+          req.params[key] = sanitizeAndValidate(req.params[key], req);
         }
       });
     }
@@ -91,6 +139,12 @@ export const sanitizeAll = (req, res, next) => {
     next();
   } catch (error) {
     console.error('Sanitization error:', error);
+    logSecurityAlert('sanitization_error', {
+      error: error.message,
+      ip: req.ip || 'unknown',
+      userAgent: req.get('User-Agent') || 'unknown',
+      url: req.originalUrl || 'unknown'
+    });
     next(); // Continue even if sanitization fails
   }
 };
@@ -99,6 +153,18 @@ export const sanitizeAll = (req, res, next) => {
 export const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    // Log validation failures for security monitoring
+    logSecurityAlert('validation_error', {
+      errors: errors.array(),
+      ip: req.ip || 'unknown',
+      userAgent: req.get('User-Agent') || 'unknown',
+      url: req.originalUrl || 'unknown',
+      method: req.method,
+      body: JSON.stringify(req.body),
+      query: JSON.stringify(req.query),
+      userId: req.user?.id || req.user?.sub || 'anonymous'
+    });
+
     return res.status(400).json({
       success: false,
       message: 'Invalid input data',

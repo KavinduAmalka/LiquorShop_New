@@ -30,6 +30,16 @@ export const updateProfile = async (req, res) => {
       return res.json({ success: false, message: "User not found" });
     }
     
+    // Log profile update audit event
+    logAuditEvent('user_profile_updated', {
+      userId: user._id,
+      username: user.username,
+      email: user.email,
+      updatedFields: { username, name, contactNumber, country },
+      ip: req.ip || 'unknown',
+      userAgent: req.get('User-Agent') || 'unknown'
+    });
+    
     return res.json({ 
       success: true, 
       user: { 
@@ -42,6 +52,15 @@ export const updateProfile = async (req, res) => {
     });
   } catch (error) {
     console.error(error.message);
+    
+    // Log profile update error
+    logSecurityAlert('user_profile_update_error', {
+      error: error.message,
+      userId: req.user?.id || 'unknown',
+      ip: req.ip || 'unknown',
+      userAgent: req.get('User-Agent') || 'unknown'
+    });
+    
     // Don't expose internal error details
     res.status(500).json({ success: false, message: "An error occurred while updating profile" });
   }
@@ -49,6 +68,7 @@ export const updateProfile = async (req, res) => {
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { logAuditEvent, logAuthEvent, logSecurityAlert } from '../confligs/logger.js';
 
 // Rejister a new user: /api/user/register
 export const register = async (req, res)=> {
@@ -67,7 +87,16 @@ export const register = async (req, res)=> {
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    const user = await User.create({username, name, email, password: hashedPassword, contactNumber, country})
+    const user = await User.create({username, name, email, password: hashedPassword, contactNumber, country});
+
+    // Log user registration audit event
+    logAuditEvent('user_registered', {
+      userId: user._id,
+      username: user.username,
+      email: user.email,
+      ip: req.ip || 'unknown',
+      userAgent: req.get('User-Agent') || 'unknown'
+    });
 
     const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn:'7d'});
 
@@ -76,12 +105,22 @@ export const register = async (req, res)=> {
       secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', // CSRF protection
       maxAge: 7 * 24 * 60 * 60 * 1000 // Cookie expiration time (7 days)
-    })
+    });
 
-    return res.json({success: true, user: {username: user.username, email: user.email, name: user.name, contactNumber: user.contactNumber, country: user.country, cartItems: user.cartItems || {}}})
+    return res.json({success: true, user: {username: user.username, email: user.email, name: user.name, contactNumber: user.contactNumber, country: user.country, cartItems: user.cartItems || {}}});
 
   }catch(error){
     console.error(error.message);
+    
+    // Log registration failure
+    logSecurityAlert('user_registration_failed', {
+      error: error.message,
+      email: req.body?.email || 'unknown',
+      username: req.body?.username || 'unknown',
+      ip: req.ip || 'unknown',
+      userAgent: req.get('User-Agent') || 'unknown'
+    });
+    
     res.json({success: false, message: error.message});
   }
 }
@@ -97,15 +136,42 @@ export const login = async (req, res) => {
      const user = await User.findOne({email});
 
      if(!user){
+      // Log failed login attempt
+      logAuthEvent('user_login_failed', {
+        email,
+        reason: 'User not found',
+        ip: req.ip || 'unknown',
+        userAgent: req.get('User-Agent') || 'unknown'
+      });
+      
       return res.json({success: false, message: "Invalid email or password"});
      }
 
-     const isMatch = await bcrypt.compare(password, user.password)
+     const isMatch = await bcrypt.compare(password, user.password);
 
-      if(!isMatch)
+      if(!isMatch) {
+        // Log failed login attempt  
+        logAuthEvent('user_login_failed', {
+          userId: user._id,
+          email,
+          reason: 'Invalid password',
+          ip: req.ip || 'unknown',
+          userAgent: req.get('User-Agent') || 'unknown'
+        });
+        
         return res.json({success: false, message: "Invalid email or password"});
+      }
       
        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn:'7d'});
+
+      // Log successful login
+      logAuthEvent('user_login_success', {
+        userId: user._id,
+        email: user.email,
+        username: user.username,
+        ip: req.ip || 'unknown',
+        userAgent: req.get('User-Agent') || 'unknown'
+      });
 
       res.cookie('token',token, {
         httpOnly: true, 
@@ -114,10 +180,19 @@ export const login = async (req, res) => {
         maxAge: 7 * 24 * 60 * 60 * 1000 
       })
 
-  return res.json({success: true, user: {username: user.username, email: user.email, name: user.name, contactNumber: user.contactNumber, country: user.country, cartItems: user.cartItems || {}}})
+  return res.json({success: true, user: {username: user.username, email: user.email, name: user.name, contactNumber: user.contactNumber, country: user.country, cartItems: user.cartItems || {}}});
 
   }catch(error){
     console.error(error.message);
+    
+    // Log login error
+    logSecurityAlert('user_login_error', {
+      error: error.message,
+      email: req.body?.email || 'unknown',
+      ip: req.ip || 'unknown',
+      userAgent: req.get('User-Agent') || 'unknown'
+    });
+    
     res.json({success: false, message: error.message});
   }
 }
