@@ -44,7 +44,7 @@ await connectDB();
 const allowedOrigins = [
   'http://localhost:5173', 
   'https://localhost:5173',
-  'https://liquar-shop.vercel.app'
+  'https://your-new-frontend-domain.vercel.app'
 ];
 
 app.post('/stripe', express.raw({type: 'application/json'}), stripeWebhooks);

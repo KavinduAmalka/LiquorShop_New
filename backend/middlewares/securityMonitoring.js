@@ -330,7 +330,7 @@ export const validateRequest = (req, res, next) => {
   const origin = req.get('Origin');
   if (req.method === 'POST' && origin && 
       !origin.includes('localhost:5173') && 
-      !origin.includes('liquar-shop.vercel.app')) {
+      !origin.includes('your-new-frontend-domain.vercel.app')) {
     logSecurityAlert('suspicious_origin', {
       reason: 'Suspicious origin detected',
       origin,
