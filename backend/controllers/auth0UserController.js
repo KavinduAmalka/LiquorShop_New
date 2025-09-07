@@ -67,17 +67,25 @@ export const auth0Callback = async (req, res) => {
       console.log(`Creating user with username: ${finalUsername}`);
 
       // Create new user with minimal required info
-      user = await User.create({
+      const userData = {
         auth0Id,
         email: finalEmail,
         name: finalName,
         username: finalUsername,
-        contactNumber: contactNumber || '', 
-        country: country || '', 
         authProvider: 'auth0',
         profileComplete: !!(contactNumber && country), 
         cartItems: {}
-      });
+      };
+
+      // Only add contactNumber and country if they are not empty
+      if (contactNumber && contactNumber.trim()) {
+        userData.contactNumber = contactNumber.trim();
+      }
+      if (country && country.trim()) {
+        userData.country = country.trim();
+      }
+
+      user = await User.create(userData);
       console.log('User created successfully');
     }
 

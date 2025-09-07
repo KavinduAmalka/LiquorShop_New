@@ -41,7 +41,14 @@ const userSchema = new mongoose.Schema({
       return this.authProvider === 'local'; // Required only for local auth
     },
     trim: true,
-    match: [/^[+]?[\d\s\-()]{7,15}$/, 'Please enter a valid contact number']
+    validate: {
+      validator: function(v) {
+        // Only validate if value is provided (not empty)
+        if (!v || v.trim() === '') return true;
+        return /^[+]?[\d\s\-()]{7,15}$/.test(v);
+      },
+      message: 'Please enter a valid contact number'
+    }
   },
   country: {
     type: String, 
@@ -49,9 +56,14 @@ const userSchema = new mongoose.Schema({
       return this.authProvider === 'local'; // Required only for local auth
     },
     trim: true,
-    minlength: [2, 'Country must be at least 2 characters long'],
-    maxlength: [50, 'Country must not exceed 50 characters'],
-    match: [/^[a-zA-Z\s]+$/, 'Country can only contain letters and spaces']
+    validate: {
+      validator: function(v) {
+        // Only validate if value is provided (not empty)
+        if (!v || v.trim() === '') return true;
+        return v.length >= 2 && v.length <= 50 && /^[a-zA-Z\s]+$/.test(v);
+      },
+      message: 'Country must be 2-50 characters long and contain only letters and spaces'
+    }
   },
   cartItems: {
     type: Object, 
