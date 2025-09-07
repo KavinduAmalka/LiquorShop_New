@@ -233,11 +233,8 @@ export function getSafeOrigin(req) {
   if (env === 'development') {
     return 'http://localhost:5173';
   } else {
-    // Return the first production domain
-    const productionDomain = config.allowedDomains.find(domain => 
-      domain.includes('vercel.app') || domain.includes('liquar-shop')
-    );
-    return productionDomain ? `https://${productionDomain}` : 'https://liquar-shop.vercel.app';
+    // Return localhost for non-production environments
+    return 'http://localhost:5173';
   }
 }
 

@@ -42,7 +42,6 @@ export const ssrfConfig = {
       'localhost',
       '127.0.0.1',
       '0.0.0.0',
-      'liquar-shop.vercel.app', // Include production domain for testing
       'api.stripe.com',
       'api.cloudinary.com',
       'res.cloudinary.com'
@@ -53,7 +52,6 @@ export const ssrfConfig = {
   
   production: {
     allowedDomains: [
-      'liquar-shop.vercel.app',
       'api.stripe.com',
       'api.cloudinary.com',
       'res.cloudinary.com'

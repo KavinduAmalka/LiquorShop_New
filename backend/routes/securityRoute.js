@@ -40,7 +40,7 @@ securityRouter.get('/ssrf-status', authSeller, (req, res) => {
         ssrfAttemptsToday: ssrfAttempts,
         blockedRequestsToday: blockedRequests,
         protectionActive: true,
-        allowedDomains: ['your-new-frontend-domain.vercel.app', 'api.stripe.com', 'api.cloudinary.com', 'localhost'],
+        allowedDomains: ['api.stripe.com', 'api.cloudinary.com', 'localhost'],
         lastCheck: new Date().toISOString()
       }
     });

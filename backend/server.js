@@ -40,11 +40,10 @@ appLogger.info('Starting LiquorShop Backend Server', {
 
 await connectDB();
 
-//Allow multiple origins - update for HTTPS in development
+//Allow multiple origins - for local development only
 const allowedOrigins = [
   'http://localhost:5173', 
-  'https://localhost:5173',
-  'https://your-new-frontend-domain.vercel.app'
+  'https://localhost:5173'
 ];
 
 app.post('/stripe', express.raw({type: 'application/json'}), stripeWebhooks);
