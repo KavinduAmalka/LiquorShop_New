@@ -6,13 +6,14 @@
   "scripts": {
     "start": "node server.js",
     "server": "nodemon server.js",
+    "https": "cross-env ENABLE_HTTPS=true NODE_ENV=development nodemon server.js",
+    "generate-certs": "node generate-certs.js",
+    "test-https": "node test-https.js",
     "audit": "npm audit",
     "audit:fix": "npm audit fix",
     "audit:report": "npm audit --audit-level=moderate",
     "security:check": "npm audit --audit-level=high",
-    "security:update": "npm update && npm audit fix",
-    "test:ssrf": "node ../test-ssrf-protection.js",
-    "security:test": "npm run test:ssrf"
+    "security:update": "npm update && npm audit fix"
   },
   "keywords": [],
   "author": "",
@@ -41,6 +42,9 @@
     "xss": "^1.0.15"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "cross-env": "^10.0.0",
+    "mkcert": "^3.2.0",
+    "nodemon": "^3.1.10",
+    "selfsigned": "^3.0.1"
   }
 }

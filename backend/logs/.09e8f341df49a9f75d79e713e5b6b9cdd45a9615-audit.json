@@ -6,19 +6,9 @@
     "auditLog": "E:\\LiquorShop_New\\backend\\logs\\.09e8f341df49a9f75d79e713e5b6b9cdd45a9615-audit.json",
     "files": [
         {
-            "date": 1756971426456,
-            "name": "E:\\LiquorShop_New\\backend\\logs\\audit-2025-09-04.log",
-            "hash": "d877b76ca6ba7992ad02c8120c7a190401e919cf7acf86df69a4cf6470ed2f01"
-        },
-        {
-            "date": 1757123542400,
-            "name": "E:\\LiquorShop_New\\backend\\logs\\audit-2025-09-06.log",
-            "hash": "92721c6e01778cd3c97c0b9d97cf818d51431ad39bcf8e3f2cffa59640698491"
-        },
-        {
-            "date": 1757210805964,
+            "date": 1757236985960,
             "name": "E:\\LiquorShop_New\\backend\\logs\\audit-2025-09-07.log",
-            "hash": "7ee14c1be7baf5104f776cb4f2ae0dd2b970fc1f1fd94c26534b8db0306bf19f"
+            "hash": "d14162cb6ffd1dd77eefb702792b1831bfe9041894af38682231918523e79583"
         }
     ],
     "hashType": "sha256"
