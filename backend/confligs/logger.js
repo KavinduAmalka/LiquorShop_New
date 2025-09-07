@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Create logs directory if it doesn't exist
+
 const logsDir = path.join(__dirname, '..', 'logs');
 
 // Custom format for security logs
@@ -60,7 +60,7 @@ const appLogger = winston.createLogger({
       level: 'error'
     })
   ],
-  // Don't exit on handled exceptions
+
   exitOnError: false
 });
 
@@ -87,7 +87,7 @@ const securityLogger = winston.createLogger({
       filename: path.join(logsDir, 'security-%DATE%.log'),
       datePattern: 'YYYY-MM-DD',
       maxSize: '20m',
-      maxFiles: '90d', // Keep security logs longer
+      maxFiles: '90d', 
       level: 'info'
     }),
 
@@ -112,12 +112,12 @@ const auditLogger = winston.createLogger({
     category: 'audit'
   },
   transports: [
-    // Audit trail log
+   
     new DailyRotateFile({
       filename: path.join(logsDir, 'audit-%DATE%.log'),
       datePattern: 'YYYY-MM-DD',
       maxSize: '20m',
-      maxFiles: '365d', // Keep audit logs for 1 year
+      maxFiles: '365d', 
       level: 'info'
     })
   ],

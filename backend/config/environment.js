@@ -11,7 +11,7 @@ const getEnvironmentConfig = () => {
     },
     production: {
       allowedOrigins: [
-        'http://localhost:5173', // Keep for testing
+        'http://localhost:5173', 
         'https://localhost:5173',
         process.env.FRONTEND_URL || 'https://your-new-frontend-domain.vercel.app'
       ],
