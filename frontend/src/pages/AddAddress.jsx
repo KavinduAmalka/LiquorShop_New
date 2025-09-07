@@ -52,7 +52,7 @@ const AddAddress = () => {
     }
     
     try {
-  const { data } = await axios.post('/api/address/add', {address, userId: user.email});
+  const { data } = await axios.post('/api/address/add', {address});
 
         if(data.success){
           toast.success(data.message);

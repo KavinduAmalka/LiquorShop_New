@@ -7,7 +7,8 @@ import { getSafeOrigin } from "../middlewares/ssrfProtection.js";
 // Place Order COD : /api/order/cod
 export const placeOrderCOD = async (req, res) => {
   try {
-      const { userId, items, address, purchaseDate, preferredDeliveryTime } = req.body;
+      const { items, address, purchaseDate, preferredDeliveryTime } = req.body;
+      const userId = req.user.id; // Get userId from authenticated token, not request body
       console.log('COD Order Request:', { userId, items, address, purchaseDate, preferredDeliveryTime });
       if(!address || !items || items.length === 0 || !purchaseDate || !preferredDeliveryTime){
         return res.json({success: false, message: "Invalid order details"});
@@ -43,7 +44,8 @@ export const placeOrderCOD = async (req, res) => {
 // Place Order Stripe : /api/order/stripe
 export const placeOrderStripe = async (req, res) => {
   try {
-      const { userId, items, address, purchaseDate, preferredDeliveryTime } = req.body;
+      const { items, address, purchaseDate, preferredDeliveryTime } = req.body;
+      const userId = req.user.id; // Get userId from authenticated token, not request body
       // Use safe origin instead of raw header
       const safeOrigin = getSafeOrigin(req);
       console.log('Stripe Order Request:', { userId, items, address, purchaseDate, preferredDeliveryTime });

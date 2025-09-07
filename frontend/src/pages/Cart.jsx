@@ -69,7 +69,6 @@ import axios from "axios";
            //Place Order with COD 
            if(PaymentOption === "COD"){
             const { data } = await axios.post('/api/order/cod', {
-                userId: user._id,
                 items:cartArray.map(item=>({product: item._id, quantity: item.quantity})),
                 address: selectedAddress._id,
                 purchaseDate,
@@ -87,7 +86,6 @@ import axios from "axios";
            }else{
             //Place Order with Stripe
              const { data } = await axios.post('/api/order/stripe', {
-                userId: user._id,
                 items:cartArray.map(item=>({product: item._id, quantity: item.quantity})),
                 address: selectedAddress._id,
                 purchaseDate,
