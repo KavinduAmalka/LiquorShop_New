@@ -1,0 +1,25 @@
+JWT_SECRET="your_super_secret_jwt_key_min_32_characters_long"
+NODE_ENV="development"
+
+#Admin credentials
+SELLER_EMAIL="sample email"
+SELLER_PASSWORD="password"
+
+#MongoDB Setup
+MONGODB_URI="mongodb+srv://kavindueka:kavindu123@cluster0.fuya0j1.mongodb.net"
+
+#Cloudinary
+CLOUDINARY_CLOUD_NAME="your_cloudinary_cloud_name"
+CLOUDINARY_API_KEY="your_cloudinary_api_key"
+CLOUDINARY_API_SECRET="your_cloudinary_api_secret"
+
+#Stripe setup
+STRIPE_PUBLISHABLE_KEY = 'pk_test_51Rx14cAAKQ3yWKnDV0NgqEej5Eu1TC8zGI6E3F2ErDSWzvFmuxcLPTe9fyItF9gmVo76EZK9Uyt62bpklJfZmqL300NLLyK2T6'
+STRIPE_SECRET_KEY = sk_test_your_stripe_secret_key
+
+STRIPE_WEBHOOK_SECRET = sk_test_your_stripe_secret_key
+
+
+AUTH0_DOMAIN=your-auth0-domain.auth0.com
+AUTH0_AUDIENCE=https://your-api-identifier
+

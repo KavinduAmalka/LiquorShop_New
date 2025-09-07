@@ -491,4 +491,4 @@ Before deployment, ensure all these environment variables are properly configure
 
 ---
 
-**Built with ❤️ by the LiquorShop Team**
+
