@@ -14,8 +14,10 @@ import productRouter from './routes/productRoute.js';
 import cartRouter from './routes/cartRoute.js';
 import addressRouter from './routes/addressRoute.js';
 import orderRouter from './routes/orderRoute.js';
+import securityRouter from './routes/securityRoute.js';
 import { stripeWebhooks } from './controllers/orderController.js';
 import { sanitizeAll } from './middlewares/validation.js';
+import { originValidationMiddleware, urlParameterValidation } from './middlewares/ssrfProtection.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -50,6 +52,10 @@ app.use(cors({
 // Apply input sanitization to all routes (includes NoSQL injection protection)
 app.use(sanitizeAll);
 
+// Apply SSRF protection middleware
+app.use(originValidationMiddleware);
+app.use(urlParameterValidation);
+
 app.get('/', (req, res) => res.send("API is working"));
 app.use('/api/user', userRouter);
 app.use('/api/auth0-user', auth0UserRouter);
@@ -58,6 +64,7 @@ app.use('/api/product', productRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/address', addressRouter);
 app.use('/api/order', orderRouter);
+app.use('/api/security', securityRouter);
 
 app.listen(port, () => {
    console.log(`Server is running on http://localhost: ${port}`);

@@ -2,6 +2,7 @@ import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import stripe from "stripe";
 import User from "../models/User.js";
+import { getSafeOrigin } from "../middlewares/ssrfProtection.js";
 
 // Place Order COD : /api/order/cod
 export const placeOrderCOD = async (req, res) => {
@@ -43,7 +44,8 @@ export const placeOrderCOD = async (req, res) => {
 export const placeOrderStripe = async (req, res) => {
   try {
       const { userId, items, address, purchaseDate, preferredDeliveryTime } = req.body;
-      const {origin} = req.headers;
+      // Use safe origin instead of raw header
+      const safeOrigin = getSafeOrigin(req);
       console.log('Stripe Order Request:', { userId, items, address, purchaseDate, preferredDeliveryTime });
       if(!address || !items || items.length === 0 || !purchaseDate || !preferredDeliveryTime){
         return res.json({success: false, message: "Invalid order details"});
@@ -93,8 +95,8 @@ export const placeOrderStripe = async (req, res) => {
       const session = await stripeInstance.checkout.sessions.create({
         line_items,
         mode: 'payment',
-        success_url: `${origin}/loader?next=my-orders`,
-        cancel_url: `${origin}/cart`,
+        success_url: `${safeOrigin}/loader?next=my-orders`,
+        cancel_url: `${safeOrigin}/cart`,
         metadata:{
           orderId: order._id.toString(),
           userId,

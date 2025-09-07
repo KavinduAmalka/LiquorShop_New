@@ -14,6 +14,11 @@
             "date": 1757123542398,
             "name": "E:\\LiquorShop_New\\backend\\logs\\security-alerts-2025-09-06.log",
             "hash": "066423b8564489bf57f00fb6bf6849cb6639666ad0eb63fce953e3b593af7856"
+        },
+        {
+            "date": 1757210805961,
+            "name": "E:\\LiquorShop_New\\backend\\logs\\security-alerts-2025-09-07.log",
+            "hash": "f37bd2e5e030ac0114f22e9fc87239d5c923f1ceb6ef6defa52201a9c863a1e2"
         }
     ],
     "hashType": "sha256"

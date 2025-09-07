@@ -1,6 +1,7 @@
 import e from "express";
 import Product from "../models/Product.js";
 import cloudinary from "../confligs/cloudinary.js";
+import { securityLogger } from "../confligs/logger.js";
 
 
 
@@ -41,12 +42,30 @@ export const addProduct = async (req, res) => {
 
     let imageUrl = await Promise.all(
       images.map(async (item) => {
-        let result = await cloudinary.uploader.upload(item.path, { 
-          resource_type: 'image',
-          allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-          max_file_size: 5000000 // 5MB limit
-        });
-        return result.secure_url;
+        try {
+          let result = await cloudinary.uploader.upload(item.path, { 
+            resource_type: 'image',
+            allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+            max_file_size: 5000000 // 5MB limit
+          });
+          
+          // Log successful upload for security monitoring
+          securityLogger.info('Cloudinary upload successful', {
+            filename: item.filename || 'unknown',
+            url: result.secure_url,
+            size: item.size || 'unknown',
+            timestamp: new Date().toISOString()
+          });
+          
+          return result.secure_url;
+        } catch (uploadError) {
+          securityLogger.error('Cloudinary upload failed', {
+            filename: item.filename || 'unknown',
+            error: uploadError.message,
+            timestamp: new Date().toISOString()
+          });
+          throw uploadError;
+        }
       })
     );
 

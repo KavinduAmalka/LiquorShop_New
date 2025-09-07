@@ -35,7 +35,40 @@ export const securityConfig = {
   }
 };
 
+// SSRF protection configuration
+export const ssrfConfig = {
+  development: {
+    allowedDomains: [
+      'localhost',
+      '127.0.0.1',
+      '0.0.0.0',
+      'liquar-shop.vercel.app', // Include production domain for testing
+      'api.stripe.com',
+      'api.cloudinary.com',
+      'res.cloudinary.com'
+    ],
+    allowPrivateNetworks: true, // Allow localhost access in dev
+    strictMode: false
+  },
+  
+  production: {
+    allowedDomains: [
+      'liquar-shop.vercel.app',
+      'api.stripe.com',
+      'api.cloudinary.com',
+      'res.cloudinary.com'
+    ],
+    allowPrivateNetworks: false, // Block private networks in production
+    strictMode: true
+  }
+};
+
 export const getSecurityConfig = () => {
   const env = process.env.NODE_ENV || 'development';
   return securityConfig[env] || securityConfig.development;
+};
+
+export const getSSRFConfig = () => {
+  const env = process.env.NODE_ENV || 'development';
+  return ssrfConfig[env] || ssrfConfig.development;
 };
