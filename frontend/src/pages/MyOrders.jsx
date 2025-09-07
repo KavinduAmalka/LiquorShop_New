@@ -1,29 +1,36 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth0AppContext } from '../context/Auth0AppContext'
 import { dummyOrders } from '../assets/assets'
+import { useLocation } from 'react-router-dom'
 import axios from 'axios'
 
 const MyOrders = () => {
 
   const [myOrders, setMyOrders] = useState([])
+  const [loading, setLoading] = useState(false)
   const {currency, user} = useAuth0AppContext()
+  const location = useLocation()
 
   const fetchMyOrders = async () => {
      try {
+         setLoading(true)
          const { data } = await axios.get('/api/order/user')
          if(data.success){
             setMyOrders(data.orders)
          }
      } catch (error) {
          console.log(error);
+     } finally {
+         setLoading(false)
      }
   }
 
+  // Fetch orders when user changes, location changes, or component mounts
   useEffect(()=>{
     if(user){
           fetchMyOrders()
     }
-  },[user])
+  },[user, location.search]) // This will trigger when user changes or URL params change
 
   return (
     <div className='mt-16 pb-16'>
@@ -31,7 +38,22 @@ const MyOrders = () => {
        <p className='text-2xl font-medium uppercase'>My orders</p>
        <div className='w-16 h-0.5 bg-primary rounded-full'></div>
       </div>
-      {myOrders.map((order, index) => (
+      
+      {loading && (
+        <div className='flex justify-center items-center py-12'>
+          <div className='animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-primary'></div>
+          <span className='ml-2 text-gray-600'>Loading orders...</span>
+        </div>
+      )}
+      
+      {!loading && myOrders.length === 0 && (
+        <div className='text-center py-12'>
+          <p className='text-gray-600 text-lg'>No orders found</p>
+          <p className='text-gray-400 text-sm mt-2'>Your orders will appear here after you make a purchase</p>
+        </div>
+      )}
+      
+      {!loading && myOrders.map((order, index) => (
         <div key={index} className='border border-gray-300 rounded-lg mb-10 p-4 py-5 max-w-5xl'>
           <p className='flex justify-between md:items-center text-gray-400 md:font-medium max-md:flex-col'>
             <span>OrderId : {order._id}</span>

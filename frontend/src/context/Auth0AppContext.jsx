@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
@@ -24,6 +24,9 @@ export const Auth0AppContextProvider = ({ children }) => {
   const [showUserLogin, setShowUserLogin] = useState(false);
   const [products, setProducts] = useState([]);
   const currency = import.meta.env?.VITE_CURRENCY || '$';
+  
+  // Ref to prevent multiple simultaneous cart operations
+  const isClearingCart = useRef(false);
 
   // Initialize cart - empty for non-authenticated users
   const getInitialCart = () => {
@@ -326,19 +329,29 @@ export const Auth0AppContextProvider = ({ children }) => {
 
   // Clear cart
   const clearCart = async () => {
-    const emptyCart = {};
-    setCartItems(emptyCart);
-    localStorage.removeItem('cartItems');
-    
-    if (isAuthenticated && user) {
-      try {
-        await axios.post('/api/cart/update', { cartItems: emptyCart });
-      } catch (error) {
-        console.error('Error clearing cart:', error);
-        toast.error('Failed to clear cart');
-      }
+    // Prevent multiple simultaneous clear operations
+    if (isClearingCart.current) {
+      console.log('Cart clear already in progress, skipping...');
+      return;
     }
-    // No success message - cart clears silently
+    
+    isClearingCart.current = true;
+    
+    try {
+      const emptyCart = {};
+      setCartItems(emptyCart);
+      localStorage.removeItem('cartItems');
+      
+      if (isAuthenticated && user) {
+        await axios.post('/api/cart/update', { cartItems: emptyCart });
+      }
+      // No success message - cart clears silently
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      toast.error('Failed to clear cart');
+    } finally {
+      isClearingCart.current = false;
+    }
   };
 
   // Logout user

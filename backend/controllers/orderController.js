@@ -131,6 +131,17 @@ export const stripeWebhooks = async (request, response) => {
 
   // Handle the event
   switch (event.type){
+    case "checkout.session.completed":{
+       const session = event.data.object;
+       const { orderId, userId } = session.metadata;
+       
+       //Mark Payment as Paid
+       await Order.findByIdAndUpdate(orderId, {isPaid: true})
+       //Clear user cart
+       await User.findByIdAndUpdate(userId, {cartItems: {}});
+       console.log(`Payment completed for order ${orderId}, cart cleared for user ${userId}`);
+       break;
+    }
     case "payment_intent.succeeded":{
        const paymentIntent = event.data.object;
        const paymentIntentId = paymentIntent.id;
